@@ -15,7 +15,7 @@ library(gridExtra)
 library(grid)
 library(dplyr)
 
-#Reading the json file.
+#Extracting the data - Reading the json file.
 js.nf <- fromJSON(txt="sample.txt", simplifyDataFrame=TRUE)
 
 #deleting the dataframe from the memory.
@@ -28,8 +28,7 @@ if (exists("df.temp") == "TRUE") {
 if (exists("df.nf") == "TRUE") {
   rm(df.nf)
 }
-
-# Create Data set ---------------------------
+# Parsing the data - Data set creation
 # df.nf is the data fraem with the nota fiscal content.
 df.nf <- js.nf$complemento
 df.nf$dataemissao <- js.nf$ide$dhEmi
@@ -53,11 +52,16 @@ for (i in seq(along = js.nf$det)) {
     df.prod <- df.temp
   }  
 }
+
 #removing unecessary dataset
 rm(js.nf)
 rm(df.temp)
+
 # showing the dataset attributes
 names(df.nf)
+
+#The distribution by product
+View(df.prod %>% count(xProd, sort = TRUE))
 
 #filtering the product by buffet.
 df.prodbuffet <- df.prod %>% 
@@ -65,7 +69,7 @@ df.prodbuffet <- df.prod %>%
 
 #The max product price without outliers.
 df.prod %>% 
-  filter(vProd <200) %>% 
+  filter(vProd < 200) %>% 
   summarise(
     maximo = max(vProd)
   )
@@ -75,15 +79,15 @@ mean(df.prod$vProd)
 
 #showing the distribution the customer spend at the restaurant
 # is similar the distribution the buffet price.
-plot1 <- ggplot(aes(x = valorTotal), data = df.nf)+
-  geom_histogram(binwidth = 10)+  
-  ggtitle("Total spend distribution")+
+plot1 <- ggplot(aes(x = valorTotal), data = df.nf) +
+  geom_histogram(binwidth = 10) +  
+  ggtitle("Total spend distribution") +
   xlab("Total")  +
   ylab("Frequency")  
 
 plot2 <- ggplot(aes(vProd), data = df.prodbuffet ) +
   geom_histogram(binwidth = 10)+
-  ggtitle("Total spend distribution with buffet")+
+  ggtitle("Total spend distribution with buffet") +
   xlab("Total with buffet")  +
   ylab("Frequency")    
 
@@ -103,16 +107,16 @@ df.nf.without.out <- df.nf %>%
 summary(df.nf$valorTotal)
 
 #charts showing the total spend distribution.
-plot1 <- ggplot(aes(x = valorTotal), data = df.nf)+
-  geom_histogram(binwidth = 10)+  
-  ggtitle("Total spend distribution")+
+plot1 <- ggplot(aes(x = valorTotal), data = df.nf) +
+  geom_histogram(binwidth = 10) +  
+  ggtitle("Total spend distribution") +
   xlab("Total")  +
   ylab("Frequency")  
 
-plot2 <- ggplot(aes(x = valorTotal), data = df.nf)+
+plot2 <- ggplot(aes(x = valorTotal), data = df.nf) +
   geom_histogram(binwidth = 10) +
   coord_cartesian(xlim = c(20, 226)) +
-  ggtitle("Total spend distribution without outliers")+
+  ggtitle("Total spend distribution without outliers") +
   xlab("Total")  +
   ylab("Frequency")  
 #showing the plots in a grid
@@ -155,7 +159,7 @@ df.nfbyweek <-df.nf.without.out %>%
 #
 #plotting a scatter diagram from valorTotal by week
 plot1 <- ggplot(aes(x = week, y = valorTotal), data = df.nf.without.out) +
-  geom_point(alpha = 0.4, size = 1,color = 'blue', position = 'jitter')+
+  geom_point(alpha = 0.4, size = 1,color = 'blue', position = 'jitter') +
   geom_smooth(method = "lm", color = "red"  ) +
   ggtitle("Total spend distribution by week") +
   xlab("Week") +
@@ -188,12 +192,8 @@ modelEstimate
 #removing the dataframe.
 rm(df.nfbyweek)
 rm(df.nf.without.out)
-
 # Find the best places at the resturant:
 #   (mesas) whith greater frequency
 View(df.nf %>% count(mesa, sort = TRUE))
 
-
-
-
-
+rm(df.nf)
